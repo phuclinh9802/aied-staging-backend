@@ -70,10 +70,12 @@ passport.use(
   )
 );
 
+const secret = process.env.NODE_JS_SECRET_KEY;
+
 // Initialize passport and session
 app.use(
   session({
-    secret: "secretkey", // Change this to a secure random string
+    secret: secret, // Change this to a secure random string
     resave: false,
     saveUninitialized: true,
   })
