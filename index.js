@@ -1,7 +1,25 @@
 const express = require("express");
 const passport = require("passport");
 const session = require("express-session");
+var bodyParser = require("body-parser");
 const cors = require("cors");
+const User = require("./database/database");
+const mongoose = require("mongoose");
+const { createProxyMiddleware } = require("http-proxy-middleware");
+
+var jsonParser = bodyParser.json();
+
+const db =
+  "mongodb+srv://phuclinh9802:Linhphuc9802@cluster0.nb9ezkq.mongodb.net/?retryWrites=true&w=majority";
+mongoose
+  .connect(db, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  })
+  .then(() => console.log("Connected Successfully"))
+  .catch((err) => {
+    console.error(err);
+  });
 
 require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -21,10 +39,33 @@ passport.use(
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: CALLBACK_URL,
     },
-    (accessToken, refreshToken, profile, done) => {
+    async (accessToken, refreshToken, profile, done) => {
       // Here, you can save user data to your database or perform other actions
       // In this example, we return the user profile as is
-      return done(null, profile);
+
+      try {
+        // Check if the user already exists in the database
+        const existingUser = await User.findOne({ googleId: profile.id });
+
+        if (existingUser) {
+          // User already exists, update their profile
+          existingUser.displayName = profile.displayName;
+          existingUser.email = profile.emails[0].value;
+          await existingUser.save();
+          return done(null, existingUser);
+        } else {
+          // Create a new user in the database
+          const newUser = new User({
+            googleId: profile.id,
+            displayName: profile.displayName,
+            email: profile.emails[0].value,
+          });
+          await newUser.save();
+          return done(null, newUser);
+        }
+      } catch (err) {
+        return done(err, null);
+      }
     }
   )
 );
@@ -37,10 +78,25 @@ app.use(
     saveUninitialized: true,
   })
 );
+
 app.use("/auth/google", cors());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(cors());
+
+const appProxy = createProxyMiddleware({
+  target: "https://stage.jdoodle.com",
+  // headers: {
+  //   accept: "application/json",
+  //   method: "POST",
+  // },
+  changeOrigin: true,
+});
+
+app.use(
+  "/execute",
+  appProxy // Specify the path you want to proxy
+);
 
 // Serialize and deserialize the user
 passport.serializeUser((user, done) => done(null, user));
@@ -79,6 +135,15 @@ app.get("/logout", (req, res) => {
   req.logout();
   res.redirect("/");
 });
+
+// app.post("/execute", jsonParser, (req, res) => {
+//   const requestData = req.body;
+//   console.log("Received data:", requestData);
+
+//   // Perform any necessary operations with the data here
+
+//   res.status(200).json({ message: "Data received successfully" });
+// });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
