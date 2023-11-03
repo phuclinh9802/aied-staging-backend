@@ -3,7 +3,9 @@ const passport = require("passport");
 const session = require("express-session");
 var bodyParser = require("body-parser");
 const cors = require("cors");
-const User = require("./database/database");
+const User = require("./database/User");
+const Output = require("./database/Output");
+const Quiz = require("./database/Quiz");
 const mongoose = require("mongoose");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
@@ -84,14 +86,11 @@ app.use(
 app.use("/auth/google", cors());
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use(cors());
 
 const appProxy = createProxyMiddleware({
   target: "https://stage.jdoodle.com",
-  // headers: {
-  //   accept: "application/json",
-  //   method: "POST",
-  // },
   changeOrigin: true,
 });
 
@@ -123,6 +122,55 @@ app.get(
   }
 );
 
+app.use(express.json()); // Parse JSON data
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
+
+app.post("/save-output", async (req, res) => {
+  try {
+    const { output } = req.body;
+    console.log(output);
+    const newOutput = new Output({
+      code: output,
+    });
+    await newOutput.save();
+    res.status(200).json({ message: "Output saved to MongoDB successfully" });
+  } catch (error) {
+    console.error("Error saving output:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post("/register", async (req, res) => {
+  try {
+    const { displayName, email, role } = req.body;
+    const user = new User({ displayName, email, role });
+    await user.save();
+    res.status(201).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.put("/api/users/update-role", async (req, res) => {
+  const { newRole } = req.body;
+  const userId = req.user._id; // Assuming you have user authentication middleware setting req.user.id
+  console.log("userid: " + userId);
+  console.log("role: " + newRole);
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role: newRole },
+      { new: true }
+    );
+    res.json(user);
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.get("/dashboard", (req, res) => {
   // Check if the user is authenticated
   console.log(req.user + " ----");
@@ -133,19 +181,21 @@ app.get("/dashboard", (req, res) => {
   }
 });
 
+app.get("/api/questions", async (req, res) => {
+  try {
+    // Fetch quiz questions from MongoDB
+    const questions = await Quiz.find();
+    res.json(questions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.get("/logout", (req, res) => {
   req.logout();
   res.redirect("/");
 });
-
-// app.post("/execute", jsonParser, (req, res) => {
-//   const requestData = req.body;
-//   console.log("Received data:", requestData);
-
-//   // Perform any necessary operations with the data here
-
-//   res.status(200).json({ message: "Data received successfully" });
-// });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
