@@ -152,11 +152,26 @@ app.post("/register", async (req, res) => {
   }
 });
 
+app.get("/api/users", async (req, res) => {
+  try {
+    console.log(req.user);
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.put("/api/users/update-role", async (req, res) => {
   const { newRole } = req.body;
-  const userId = req.user._id; // Assuming you have user authentication middleware setting req.user.id
-  console.log("userid: " + userId);
-  console.log("role: " + newRole);
+  let userId = "";
+  if (req.user) {
+    userId = req.user["_id"]; // Assuming you have user authentication middleware setting req.user.id
+    console.log(req.user);
+    console.log("userid: " + userId);
+    console.log("role: " + newRole);
+  }
 
   try {
     const user = await User.findByIdAndUpdate(
