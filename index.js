@@ -8,6 +8,7 @@ const Output = require("./database/Output");
 const Quiz = require("./database/Quiz");
 const mongoose = require("mongoose");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const userRoutes = require("./routes/userRoutes");
 
 var jsonParser = bodyParser.json();
 
@@ -152,39 +153,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.get("/api/users", async (req, res) => {
-  try {
-    console.log(req.user);
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.put("/api/users/update-role", async (req, res) => {
-  const { newRole } = req.body;
-  let userId = "";
-  if (req.user) {
-    userId = req.user["_id"]; // Assuming you have user authentication middleware setting req.user.id
-    console.log(req.user);
-    console.log("userid: " + userId);
-    console.log("role: " + newRole);
-  }
-
-  try {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { role: newRole },
-      { new: true }
-    );
-    res.json(user);
-  } catch (error) {
-    console.error("Error updating user role:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+app.use("/api/users", userRoutes);
 
 app.get("/dashboard", (req, res) => {
   // Check if the user is authenticated
