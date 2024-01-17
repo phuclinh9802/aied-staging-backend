@@ -32,8 +32,7 @@ const PORT = process.env.PORT || 3001;
 // Replace these with your Google OAuth credentials
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const CALLBACK_URL =
-  "https://aied-staging-backend.vercel.app/auth/google/callback";
+const CALLBACK_URL = "/auth/google/callback";
 
 passport.use(
   new GoogleStrategy(
