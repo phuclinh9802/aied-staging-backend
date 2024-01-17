@@ -62,6 +62,11 @@ passport.use(
             googleId: profile.id,
             displayName: profile.displayName,
             email: profile.emails[0].value,
+            decompositionScore: -1,
+            patternScore: -1,
+            abstractionScore: -1,
+            algorithmScore: -1,
+            introScore: -1,
           });
           await newUser.save();
           return done(null, newUser);
@@ -118,7 +123,9 @@ app.get(
     const userData = JSON.stringify(req.user.displayName);
     console.log(req.user);
     res.redirect(
-      `http://localhost:3000/dashboard?user=${encodeURIComponent(userData)}`
+      `https://aied-staging-v2.vercel.app/dashboard?user=${encodeURIComponent(
+        userData
+      )}`
     );
   }
 );

@@ -11,6 +11,11 @@ const userSchema = new mongoose.Schema({
     default: "student", // Set a default role if none is provided
   },
   // Add other user properties as needed
+  decompositionScore: Number,
+  patternScore: Number,
+  abstractionScore: Number,
+  algorithmScore: Number,
+  introScore: Number,
 });
 
 const User = mongoose.model("User", userSchema);
