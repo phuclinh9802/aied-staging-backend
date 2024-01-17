@@ -95,7 +95,6 @@ app.use(passport.session());
 
 app.use(
   cors({
-    credentials: true, //if you are using authentication.
     origin: "https://aied-staging-v2.vercel.app",
   })
 );
