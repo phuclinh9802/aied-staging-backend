@@ -12,8 +12,7 @@ const userRoutes = require("./routes/userRoutes");
 
 var jsonParser = bodyParser.json();
 
-const db =
-  "mongodb+srv://phuclinh9802:Linhphuc9802@cluster0.nb9ezkq.mongodb.net/?retryWrites=true&w=majority";
+const db = process.env.MONGO_DB_DATABASE_URL;
 mongoose
   .connect(db, {
     useUnifiedTopology: true,
@@ -93,7 +92,12 @@ app.use("/auth/google", cors());
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cors());
+app.use(
+  cors({
+    credentials: true, //if you are using authentication.
+    origin: "https://aied-staging-v2.vercel.app",
+  })
+);
 
 const appProxy = createProxyMiddleware({
   target: "https://stage.jdoodle.com",
@@ -123,7 +127,7 @@ app.get(
     const userData = JSON.stringify(req.user.displayName);
     console.log(req.user);
     res.redirect(
-      `https://aied-staging-v2.vercel.app/dashboard?user=${encodeURIComponent(
+      `${process.env.REACT_APP_URL}/dashboard?user=${encodeURIComponent(
         userData
       )}`
     );
