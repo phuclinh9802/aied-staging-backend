@@ -2,6 +2,9 @@ const express = require("express");
 const passport = require("passport");
 const session = require("express-session");
 var bodyParser = require("body-parser");
+const LocalStrategy = require("passport-local").Strategy;
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const cors = require("cors");
 const User = require("./database/User");
 const Output = require("./database/Output");
@@ -14,10 +17,13 @@ var jsonParser = bodyParser.json();
 
 const db = process.env.MONGO_DB_DATABASE_URL;
 mongoose
-  .connect(db, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-  })
+  .connect(
+    "mongodb+srv://phuclinh9802:Linhphuc9802@cluster0.nb9ezkq.mongodb.net/?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+    }
+  )
   .then(() => console.log("Connected Successfully"))
   .catch((err) => {
     console.error(err);
@@ -30,53 +36,54 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Replace these with your Google OAuth credentials
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const CALLBACK_URL =
-  "https://aied-staging-backend.vercel.app/auth/google/callback";
+// const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+// const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+// const CALLBACK_URL =
+//   "https://aied-staging-backend.vercel.app/auth/google/callback";
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      // Here, you can save user data to your database or perform other actions
-      // In this example, we return the user profile as is
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: GOOGLE_CLIENT_ID,
+//       clientSecret: GOOGLE_CLIENT_SECRET,
+//       callbackURL: CALLBACK_URL,
+//     },
+//     async (accessToken, refreshToken, profile, done) => {
+//       // Here, you can save user data to your database or perform other actions
+//       // In this example, we return the user profile as is
 
-      try {
-        // Check if the user already exists in the database
-        const existingUser = await User.findOne({ googleId: profile.id });
+//       try {
+//         // Check if the user already exists in the database
+//         const existingUser = await User.findOne({ googleId: profile.id });
 
-        if (existingUser) {
-          // User already exists, update their profile
-          existingUser.displayName = profile.displayName;
-          existingUser.email = profile.emails[0].value;
-          await existingUser.save();
-          return done(null, existingUser);
-        } else {
-          // Create a new user in the database
-          const newUser = new User({
-            googleId: profile.id,
-            displayName: profile.displayName,
-            email: profile.emails[0].value,
-            decompositionScore: -1,
-            patternScore: -1,
-            abstractionScore: -1,
-            algorithmScore: -1,
-            introScore: -1,
-          });
-          await newUser.save();
-          return done(null, newUser);
-        }
-      } catch (err) {
-        return done(err, null);
-      }
-    }
-  )
-);
+//         if (existingUser) {
+//           // User already exists, update their profile
+//           existingUser.displayName = profile.displayName;
+//           existingUser.email = profile.emails[0].value;
+//           await existingUser.save();
+//           return done(null, existingUser);
+//         } else {
+//           // Create a new user in the database
+//           const newUser = new User({
+//             googleId: profile.id,
+//             displayName: profile.displayName,
+//             email: profile.emails[0].value,
+//             decompositionScore: -1,
+//             patternScore: -1,
+//             abstractionScore: -1,
+//             algorithmScore: -1,
+//             introScore: -1,
+//             role: "",
+//           });
+//           await newUser.save();
+//           return done(null, newUser);
+//         }
+//       } catch (err) {
+//         return done(err, null);
+//       }
+//     }
+//   )
+// );
 
 const secret = process.env.NODE_JS_SECRET_KEY;
 
@@ -93,9 +100,39 @@ app.use("/auth/google", cors());
 app.use(passport.initialize());
 app.use(passport.session());
 
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
+    const user = await User.findOne({ username: username });
+
+    if (!user) {
+      return done(null, false, { message: "Incorrect username." });
+    }
+    console.log("Found User" + user);
+    console.log(user["password"]);
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (err) throw err;
+
+      if (result) {
+        return done(null, user);
+      } else {
+        return done(null, false, { message: "Incorrect password." });
+      }
+    });
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  const user = User.find((user) => user.id === id);
+  done(null, user);
+});
+
 app.use(
   cors({
-    origin: "https://aied-staging-v2.vercel.app",
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
@@ -153,15 +190,57 @@ app.post("/save-output", async (req, res) => {
   }
 });
 
+app.post("/login", passport.authenticate("local"), (req, res) => {
+  const { _id, firstName, lastName, username, role } = req.user;
+
+  const token = jwt.sign(
+    { userId: _id, firstName, lastName, username },
+    secret,
+    {
+      expiresIn: "1h",
+    }
+  );
+  res.json({ token, user: { firstName, lastName, username, role } });
+});
+
 app.post("/register", async (req, res) => {
+  const { firstName, lastName, username, password, confirmPassword, role } =
+    req.body;
+  console.log(firstName, lastName, username, password, confirmPassword, role);
   try {
-    const { displayName, email, role } = req.body;
-    const user = new User({ displayName, email, role });
-    await user.save();
-    res.status(201).json(user);
+    // Check if the username is already taken
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already taken." });
+    }
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match." });
+    }
+
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user and save to MongoDB
+    const newUser = new User({
+      firstName,
+      lastName,
+      username,
+      password: hashedPassword,
+      role,
+      decompositionScore: -1,
+      patternScore: -1,
+      abstractionScore: -1,
+      algorithmScore: -1,
+      introScore: -1,
+    });
+    await newUser.save();
+
+    res.json({ message: "Registration successful." });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ message: "Internal server error." });
   }
 });
 
