@@ -1,6 +1,8 @@
 const express = require("express");
 const User = require("../database/User");
-
+const passport = require("passport");
+var parser = require("body-parser");
+var urlencodedParser = parser.urlencoded({ extended: false });
 const router = express.Router();
 
 router.get("/", async (req, res) => {
@@ -31,10 +33,10 @@ router.get("/:userId", async (req, res) => {
 router.put("/quiz", async (req, res) => {
   const { quizScore, type } = req.body;
   let userId = "";
-  console.log("Quiz for ", type, req.user);
-  if (req.user) {
-    userId = req.user["_id"]; // Assuming you have user authentication middleware setting req.user.id
-    // console.log(req.user);
+  console.log("Quiz for ", type, req.isAuthenticated());
+  console.log();
+  if (req.isAuthenticated()) {
+    userId = req.user._conditions._id._id; // Assuming you have user authentication middleware setting req.user.id
   }
   try {
     let user = "";

@@ -12,6 +12,7 @@ const Quiz = require("./database/Quiz");
 const mongoose = require("mongoose");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const userRoutes = require("./routes/userRoutes");
+const isStrongPassword = require("./middleware/middleware");
 
 var jsonParser = bodyParser.json();
 
@@ -95,10 +96,17 @@ app.use(
     saveUninitialized: true,
   })
 );
+app.use(
+  cors({
+    origin: process.env.REACT_APP_URL,
+    credentials: true,
+  })
+);
 
-app.use("/auth/google", cors());
+// app.use("/auth/google", cors());
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
@@ -107,14 +115,15 @@ passport.use(
     if (!user) {
       return done(null, false, { message: "Incorrect username." });
     }
-    console.log("Found User" + user);
-    console.log(user["password"]);
+    console.log("Found User" + user.password);
     bcrypt.compare(password, user.password, (err, result) => {
       if (err) throw err;
-
+      console.log(result);
       if (result) {
+        console.log(user);
         return done(null, user);
       } else {
+        console.log("incorrect");
         return done(null, false, { message: "Incorrect password." });
       }
     });
@@ -122,20 +131,16 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
+  console.log(user);
   done(null, user.id);
 });
 
 passport.deserializeUser((id, done) => {
-  const user = User.find((user) => user.id === id);
+  console.log(id);
+  const user = User.findById({ _id: id });
+  console.log("----", user, "-----");
   done(null, user);
 });
-
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
 
 const appProxy = createProxyMiddleware({
   target: "https://stage.jdoodle.com",
@@ -148,29 +153,33 @@ app.use(
 );
 
 // Serialize and deserialize the user
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser((id, done) => {
+  User.findById(id).then((user) => {
+    done(null, user);
+  });
+});
 
 // Auth route
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+// app.get(
+//   "/auth/google",
+//   passport.authenticate("google", { scope: ["profile", "email"] })
+// );
 
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    // Successful authentication, redirect to dashboard
-    const userData = JSON.stringify(req.user.displayName);
-    console.log(req.user);
-    res.redirect(
-      `${process.env.REACT_APP_URL}/dashboard?user=${encodeURIComponent(
-        userData
-      )}`
-    );
-  }
-);
+// app.get(
+//   "/auth/google/callback",
+//   passport.authenticate("google", { failureRedirect: "/login" }),
+//   (req, res) => {
+//     // Successful authentication, redirect to dashboard
+//     const userData = JSON.stringify(req.user.displayName);
+//     console.log(req.user);
+//     res.redirect(
+//       `${process.env.REACT_APP_URL}/dashboard?user=${encodeURIComponent(
+//         userData
+//       )}`
+//     );
+//   }
+// );
 
 app.use(express.json()); // Parse JSON data
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
@@ -200,6 +209,7 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
       expiresIn: "1h",
     }
   );
+  console.log("req:", req.isAuthenticated());
   res.json({ token, user: { firstName, lastName, username, role } });
 });
 
@@ -214,9 +224,28 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Username already taken." });
     }
 
+    if (username.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "The username needs to be 8 characters and more." });
+    }
+
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        message:
+          'The password needs to be 8 characters and more, contains at least a number, and a special character (!@#$%^&*(),.?":{}|<>)',
+      });
+    }
+
     // Check if passwords match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match." });
+    }
+
+    if (firstName.length < 1 && lastName.length < 1) {
+      return res
+        .status(400)
+        .json({ message: "Please enter your first name or last name." });
     }
 
     // Hash the password before storing it
