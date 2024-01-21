@@ -14,17 +14,11 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const userRoutes = require("./routes/userRoutes");
 const isStrongPassword = require("./middleware/middleware");
 
-var jsonParser = bodyParser.json();
-
-const db = process.env.MONGO_DB_DATABASE_URL;
 mongoose
-  .connect(
-    "mongodb+srv://phuclinh9802:Linhphuc9802@cluster0.nb9ezkq.mongodb.net/?retryWrites=true&w=majority",
-    {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    }
-  )
+  .connect(process.env.MONGO_DB_DATABASE_URL, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  })
   .then(() => console.log("Connected Successfully"))
   .catch((err) => {
     console.error(err);
