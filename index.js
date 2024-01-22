@@ -12,7 +12,7 @@ const Quiz = require("./database/Quiz");
 const mongoose = require("mongoose");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const userRoutes = require("./routes/userRoutes");
-const isStrongPassword = require("./middleware/middleware");
+// const isStrongPassword = require("./middleware/middleware");
 
 mongoose
   .connect(process.env.MONGO_DB_DATABASE_URL, {
@@ -209,8 +209,15 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
-  const { firstName, lastName, username, password, confirmPassword, role } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    username,
+    email,
+    password,
+    confirmPassword,
+    role,
+  } = req.body;
   console.log(firstName, lastName, username, password, confirmPassword, role);
   try {
     // Check if the username is already taken
@@ -219,10 +226,21 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Username already taken." });
     }
 
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already taken." });
+    }
+
     if (username.length < 8) {
       return res
         .status(400)
         .json({ message: "The username needs to be 8 characters and more." });
+    }
+
+    if (!isValidEmail(email)) {
+      return res
+        .status(400)
+        .json({ message: "Please enter a valid email address." });
     }
 
     if (!isStrongPassword(password)) {
@@ -251,6 +269,7 @@ app.post("/register", async (req, res) => {
       firstName,
       lastName,
       username,
+      email,
       password: hashedPassword,
       role,
       decompositionScore: -1,

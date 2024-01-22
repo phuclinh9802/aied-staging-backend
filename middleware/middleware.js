@@ -1,4 +1,4 @@
-const isStrongPassword = (str) => {
+function isStrongPassword(str) {
   // Check if the string is more than 8 characters
   if (str.length < 8) {
     return false;
@@ -16,6 +16,6 @@ const isStrongPassword = (str) => {
 
   // All criteria met
   return true;
-};
+}
 
-module.exports = isStrongPassword;
+// module.exports = isStrongPassword;
