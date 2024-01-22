@@ -90,6 +90,7 @@ app.use(
     saveUninitialized: true,
   })
 );
+console.log(process.env.REACT_APP_URL);
 app.use(
   cors({
     origin: process.env.REACT_APP_URL,
