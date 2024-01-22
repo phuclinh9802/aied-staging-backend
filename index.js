@@ -13,6 +13,7 @@ const mongoose = require("mongoose");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const userRoutes = require("./routes/userRoutes");
 // const isStrongPassword = require("./middleware/middleware");
+require("dotenv").config();
 
 mongoose
   .connect(process.env.MONGO_DB_DATABASE_URL, {
@@ -24,7 +25,6 @@ mongoose
     console.error(err);
   });
 
-require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const app = express();
