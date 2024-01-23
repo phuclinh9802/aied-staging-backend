@@ -12,7 +12,8 @@ const Quiz = require("./database/Quiz");
 const mongoose = require("mongoose");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const userRoutes = require("./routes/userRoutes");
-// const isStrongPassword = require("./middleware/middleware");
+const isStrongPassword = require("./middleware/middleware");
+const isValidEmail = require("./middleware/validEmail");
 require("dotenv").config();
 
 mongoose
@@ -226,10 +227,10 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Username already taken." });
     }
 
-    // const existingEmail = await User.findOne({ email });
-    // if (existingEmail) {
-    //   return res.status(400).json({ message: "Email already taken." });
-    // }
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already taken." });
+    }
 
     if (username.length < 8) {
       return res

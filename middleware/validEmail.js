@@ -5,3 +5,5 @@ function isValidEmail(email) {
   // Test the email address against the regex
   return emailRegex.test(email);
 }
+
+module.exports = isValidEmail;

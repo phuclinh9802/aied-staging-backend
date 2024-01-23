@@ -18,4 +18,4 @@ function isStrongPassword(str) {
   return true;
 }
 
-// module.exports = isStrongPassword;
+module.exports = isStrongPassword;
