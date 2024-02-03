@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema({
   abstractionScore: Number,
   algorithmScore: Number,
   introScore: Number,
+  emailScore: Number,
+  beyondScore: Number,
   role: String,
 });
 

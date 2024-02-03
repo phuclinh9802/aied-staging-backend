@@ -60,6 +60,14 @@ router.put("/quiz", async (req, res) => {
       user = await User.findByIdAndUpdate(userId, {
         introScore: quizScore.introScore,
       });
+    } else if (type === "email") {
+      user = await User.findByIdAndUpdate(userId, {
+        emailScore: quizScore.emailScore,
+      });
+    } else if (type === "beyond") {
+      user = await User.findByIdAndUpdate(userId, {
+        beyondScore: quizScore.beyondScore,
+      });
     }
     console.log("-----user------");
     res.json(user);

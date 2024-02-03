@@ -278,6 +278,8 @@ app.post("/register", async (req, res) => {
       abstractionScore: -1,
       algorithmScore: -1,
       introScore: -1,
+      emailScore: -1,
+      beyondScore: -1,
     });
     await newUser.save();
 
