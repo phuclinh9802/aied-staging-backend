@@ -84,13 +84,20 @@ const PORT = process.env.PORT || 3001;
 const secret = process.env.NODE_JS_SECRET_KEY;
 
 // Initialize passport and session
-app.use(
-  session({
-    secret: secret, // Change this to a secure random string
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+var sess = {
+  secret: secret, // Change this to a secure random string
+  resave: false,
+  saveUninitialized: true,
+};
+
+if (app.get("env") === "production") {
+  console.log(app.get("env"));
+  app.set("trust proxy", 1); // trust first proxy
+  sess.cookie.secure = true; // serve secure cookies
+}
+
+app.use(session(sess));
+
 app.use(
   cors({
     origin: process.env.REACT_APP_URL,
