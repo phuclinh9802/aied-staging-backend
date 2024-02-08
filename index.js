@@ -82,6 +82,7 @@ const PORT = process.env.PORT || 3001;
 // );
 
 const secret = process.env.NODE_JS_SECRET_KEY;
+app.set("trust proxy", 1);
 
 // Initialize passport and session
 var sess = {
