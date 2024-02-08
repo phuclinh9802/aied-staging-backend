@@ -41,33 +41,47 @@ router.put("/quiz", async (req, res) => {
   try {
     let user = "";
     if (type == "decomposition") {
-      user = await User.findByIdAndUpdate(userId, {
-        decompositionScore: quizScore.decompositionScore,
-      });
+      if (quizScore.decompositionScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          decompositionScore: quizScore.decompositionScore,
+        });
+      }
     } else if (type === "pattern-recognition") {
-      user = await User.findByIdAndUpdate(userId, {
-        patternScore: quizScore.patternScore,
-      });
+      if (quizScore.patternScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          patternScore: quizScore.patternScore,
+        });
+      }
     } else if (type === "abstraction") {
-      user = await User.findByIdAndUpdate(userId, {
-        abstractionScore: quizScore.abstractionScore,
-      });
+      if (quizScore.abstractionScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          abstractionScore: quizScore.abstractionScore,
+        });
+      }
     } else if (type === "algorithms") {
-      user = await User.findByIdAndUpdate(userId, {
-        algorithmScore: quizScore.algorithmScore,
-      });
+      if (quizScore.algorithmScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          algorithmScore: quizScore.algorithmScore,
+        });
+      }
     } else if (type === "intro") {
-      user = await User.findByIdAndUpdate(userId, {
-        introScore: quizScore.introScore,
-      });
+      if (quizScore.introScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          introScore: quizScore.introScore,
+        });
+      }
     } else if (type === "email") {
-      user = await User.findByIdAndUpdate(userId, {
-        emailScore: quizScore.emailScore,
-      });
+      if (quizScore.emailScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          emailScore: quizScore.emailScore,
+        });
+      }
     } else if (type === "beyond") {
-      user = await User.findByIdAndUpdate(userId, {
-        beyondScore: quizScore.beyondScore,
-      });
+      if (quizScore.beyondScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          beyondScore: quizScore.beyondScore,
+        });
+      }
     }
     console.log("-----user------");
     res.json(user);
