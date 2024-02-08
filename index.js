@@ -148,12 +148,13 @@ app.use(
 );
 
 // Serialize and deserialize the user
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser((id, done) => {
-  User.findById(id).then((user) => {
-    done(null, user);
-  });
-});
+// passport.serializeUser((user, done) => done(null, user.id));
+// passport.deserializeUser((id, done) => {
+//   var userId = mongoose.Schema.Types.ObjectId(id);
+//   User.findById(userId).then((user) => {
+//     done(null, user);
+//   });
+// });
 
 // Auth route
 // app.get(
@@ -304,6 +305,7 @@ app.get("/dashboard", (req, res) => {
 app.get("/api/questions", async (req, res) => {
   try {
     // Fetch quiz questions from MongoDB
+    console.log(req.user);
     const questions = await Quiz.find();
     res.json(questions);
   } catch (error) {
