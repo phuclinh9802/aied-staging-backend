@@ -88,13 +88,16 @@ var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
   saveUninitialized: true,
+  cookie: {
+    secure: true,
+  },
 };
 
-if (app.get("env") === "production") {
-  console.log(app.get("env"));
-  app.set("trust proxy", 1); // trust first proxy
-  sess.cookie.secure = true; // serve secure cookies
-}
+// if (app.get("env") === "production") {
+//   console.log(app.get("env"));
+//   app.set("trust proxy", 1); // trust first proxy
+//   sess.cookie.secure = true; // serve secure cookies
+// }
 
 app.use(session(sess));
 
