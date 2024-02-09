@@ -3,6 +3,7 @@ const passport = require("passport");
 const session = require("express-session");
 const cookieSession = require("cookie-session");
 var bodyParser = require("body-parser");
+var cookieParser = require("cookie-parser");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -89,13 +90,13 @@ var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
   saveUninitialized: false,
-  // proxy: true,
-  // cookie: {
-  //   maxAge: 7200000,
-  //   secure: true,
-  //   sameSite: "none",
-  // domain: "worklearnproject.com",
-  // },
+  proxy: app.get("env") === "production",
+  cookie: {
+    maxAge: 7200000,
+    secure: app.get("env") === "production",
+    sameSite: "none",
+    // domain: "worklearnproject.com",
+  },
 };
 
 // if (app.get("env") === "production") {
@@ -119,8 +120,10 @@ app.set("trust proxy", 1);
 //     maxAge: 24 * 60 * 60 * 1000, // 24 hours
 //   })
 // );
-// app.use(session(sess));
 
+// app.use("/auth/google", cors());
+// app.use(cookieParser());
+app.use(session(sess));
 app.use(
   cors({
     origin: process.env.REACT_APP_URL,
@@ -128,17 +131,16 @@ app.use(
   })
 );
 
-// app.use("/auth/google", cors());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use((req, res, next) => {
-  if (req.session) {
-    req.session.regenerate = (cb) => cb();
-    req.session.save = (cb) => cb();
-  }
-  next();
-});
+app.use(bodyParser.urlencoded({ extended: true }));
+// app.use((req, res, next) => {
+//   if (req.session) {
+//     req.session.regenerate = (cb) => cb();
+//     req.session.save = (cb) => cb();
+//   }
+//   next();
+// });
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
@@ -242,11 +244,6 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
       expiresIn: "1h",
     }
   );
-  res.cookie("cookie-session", "secretkey", {
-    sameSite: "none",
-    secure: true,
-  });
-
   console.log("req:", req.isAuthenticated());
   res.json({ token, user: { firstName, lastName, username, role } });
 });
@@ -346,11 +343,6 @@ app.get("/dashboard", (req, res) => {
 
 app.get("/api/questions", async (req, res) => {
   try {
-    res.cookie("cookie-session", "secretkey", {
-      sameSite: "none",
-      secure: true,
-    });
-
     // Fetch quiz questions from MongoDB
     console.log(req.user ? "found user" : "not found user");
     const questions = await Quiz.find();
