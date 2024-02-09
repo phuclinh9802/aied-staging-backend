@@ -70,6 +70,12 @@ router.put("/quiz", async (req, res) => {
           introScore: quizScore.introScore,
         });
       }
+    } else if (type === "review") {
+      if (quizScore.reviewScore > 0) {
+        user = await User.findByIdAndUpdate(userId, {
+          reviewScore: quizScore.reviewScore,
+        });
+      }
     } else if (type === "email") {
       if (quizScore.emailScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
