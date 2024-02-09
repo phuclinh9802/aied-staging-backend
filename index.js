@@ -4,6 +4,7 @@ const session = require("express-session");
 const cookieSession = require("cookie-session");
 var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
+const MongoStore = require("connect-mongo");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -90,6 +91,7 @@ var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_DB_DATABASE_URL }),
   proxy: app.get("env") === "production",
   cookie: {
     maxAge: 7200000,
