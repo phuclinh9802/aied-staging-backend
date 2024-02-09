@@ -1,6 +1,7 @@
 const express = require("express");
 const passport = require("passport");
 const session = require("express-session");
+const cookieSession = require("cookie-session");
 var bodyParser = require("body-parser");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
@@ -104,6 +105,8 @@ var sess = {
 // }
 
 app.set("trust proxy", true);
+app.use(cookieSession(secret));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session(sess));
 
 app.use(
@@ -116,7 +119,6 @@ app.use(
 // app.use("/auth/google", cors());
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
