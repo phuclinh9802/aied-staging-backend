@@ -90,9 +90,10 @@ var sess = {
   saveUninitialized: false,
   proxy: true,
   cookie: {
+    maxAge: 7200000,
     secure: true,
     sameSite: "none",
-    domain: "worklearnproject.com",
+    // domain: "worklearnproject.com",
   },
 };
 
@@ -102,7 +103,7 @@ var sess = {
 //   sess.cookie.secure = true; // serve secure cookies
 // }
 
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 app.use(session(sess));
 
 app.use(
