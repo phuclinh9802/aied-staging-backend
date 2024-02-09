@@ -104,21 +104,21 @@ var sess = {
 //   sess.cookie.secure = true; // serve secure cookies
 // }
 
-// app.set("trust proxy", true);
-app.use(
-  cookieSession({
-    name: "cookie-session",
-    keys: ["secretkey", "key2"],
-    secret: secret,
-    cookie: {
-      secure: true,
-      httpOnly: false,
-      sameSite: "none",
-    },
-    // Cookie Options
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  })
-);
+app.set("trust proxy", 1);
+// app.use(
+//   cookieSession({
+//     name: "cookie-session",
+//     keys: ["secretkey", "key2"],
+//     secret: secret,
+//     cookie: {
+//       secure: true,
+//       httpOnly: false,
+//       sameSite: "none",
+//     },
+//     // Cookie Options
+//     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+//   })
+// );
 // app.use(session(sess));
 
 app.use(
@@ -242,6 +242,11 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
       expiresIn: "1h",
     }
   );
+  res.cookie("cookie-session", "secretkey", {
+    sameSite: "none",
+    secure: true,
+  });
+
   console.log("req:", req.isAuthenticated());
   res.json({ token, user: { firstName, lastName, username, role } });
 });
@@ -341,6 +346,11 @@ app.get("/dashboard", (req, res) => {
 
 app.get("/api/questions", async (req, res) => {
   try {
+    res.cookie("cookie-session", "secretkey", {
+      sameSite: "none",
+      secure: true,
+    });
+
     // Fetch quiz questions from MongoDB
     console.log(req.user ? "found user" : "not found user");
     const questions = await Quiz.find();
