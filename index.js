@@ -89,13 +89,13 @@ var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
   saveUninitialized: false,
-  proxy: true,
-  cookie: {
-    maxAge: 7200000,
-    secure: true,
-    sameSite: "none",
-    // domain: "worklearnproject.com",
-  },
+  // proxy: true,
+  // cookie: {
+  //   maxAge: 7200000,
+  //   secure: true,
+  //   sameSite: "none",
+  // domain: "worklearnproject.com",
+  // },
 };
 
 // if (app.get("env") === "production") {
@@ -104,10 +104,21 @@ var sess = {
 //   sess.cookie.secure = true; // serve secure cookies
 // }
 
-app.set("trust proxy", true);
-app.use(cookieSession(secret));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session(sess));
+// app.set("trust proxy", true);
+app.use(
+  cookieSession({
+    name: "cookie-session",
+    keys: ["secretkey", "key2"],
+    secret: secret,
+    cookie: {
+      secure: true,
+      httpOnly: false,
+    },
+    // Cookie Options
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  })
+);
+// app.use(session(sess));
 
 app.use(
   cors({
@@ -117,8 +128,16 @@ app.use(
 );
 
 // app.use("/auth/google", cors());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use((req, res, next) => {
+  if (req.session) {
+    req.session.regenerate = (cb) => cb();
+    req.session.save = (cb) => cb();
+  }
+  next();
+});
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
