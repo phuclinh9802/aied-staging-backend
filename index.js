@@ -82,15 +82,16 @@ const PORT = process.env.PORT || 3001;
 // );
 
 const secret = process.env.NODE_JS_SECRET_KEY;
-app.set("trust proxy", 1);
 
 // Initialize passport and session
 var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
+  proxy: true,
   cookie: {
     secure: true,
+    sameSite: "none",
   },
 };
 
@@ -100,6 +101,7 @@ var sess = {
 //   sess.cookie.secure = true; // serve secure cookies
 // }
 
+app.set("trust proxy", 1);
 app.use(session(sess));
 
 app.use(
@@ -316,7 +318,7 @@ app.get("/dashboard", (req, res) => {
 app.get("/api/questions", async (req, res) => {
   try {
     // Fetch quiz questions from MongoDB
-    console.log(req.user);
+    console.log(req.user ? "found user" : "not found user");
     const questions = await Quiz.find();
     res.json(questions);
   } catch (error) {
