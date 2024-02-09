@@ -88,7 +88,7 @@ var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
   saveUninitialized: false,
-  // proxy: true,
+  proxy: true,
   cookie: {
     secure: true,
     sameSite: "none",
