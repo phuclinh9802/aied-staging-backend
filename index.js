@@ -128,7 +128,7 @@ app.set("trust proxy", 1);
 app.use(session(sess));
 app.use(
   cors({
-    origin: process.env.REACT_APP_URL,
+    origin: process.env.REACT_APP_DEV_URL,
     credentials: true,
   })
 );
