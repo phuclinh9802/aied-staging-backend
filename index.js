@@ -34,56 +34,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Replace these with your Google OAuth credentials
-// const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-// const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-// const CALLBACK_URL =
-//   "https://aied-staging-backend.vercel.app/auth/google/callback";
-
-// passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: GOOGLE_CLIENT_ID,
-//       clientSecret: GOOGLE_CLIENT_SECRET,
-//       callbackURL: CALLBACK_URL,
-//     },
-//     async (accessToken, refreshToken, profile, done) => {
-//       // Here, you can save user data to your database or perform other actions
-//       // In this example, we return the user profile as is
-
-//       try {
-//         // Check if the user already exists in the database
-//         const existingUser = await User.findOne({ googleId: profile.id });
-
-//         if (existingUser) {
-//           // User already exists, update their profile
-//           existingUser.displayName = profile.displayName;
-//           existingUser.email = profile.emails[0].value;
-//           await existingUser.save();
-//           return done(null, existingUser);
-//         } else {
-//           // Create a new user in the database
-//           const newUser = new User({
-//             googleId: profile.id,
-//             displayName: profile.displayName,
-//             email: profile.emails[0].value,
-//             decompositionScore: -1,
-//             patternScore: -1,
-//             abstractionScore: -1,
-//             algorithmScore: -1,
-//             introScore: -1,
-//             role: "",
-//           });
-//           await newUser.save();
-//           return done(null, newUser);
-//         }
-//       } catch (err) {
-//         return done(err, null);
-//       }
-//     }
-//   )
-// );
-
 const secret = process.env.NODE_JS_SECRET_KEY;
 
 // Initialize passport and session
