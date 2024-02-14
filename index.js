@@ -51,12 +51,6 @@ var sess = {
   },
 };
 
-// if (app.get("env") === "production") {
-//   console.log(app.get("env"));
-//   app.set("trust proxy", 1); // trust first proxy
-//   sess.cookie.secure = true; // serve secure cookies
-// }
-
 app.set("trust proxy", 1);
 // app.use(
 //   cookieSession({
@@ -73,8 +67,6 @@ app.set("trust proxy", 1);
 //   })
 // );
 
-// app.use("/auth/google", cors());
-// app.use(cookieParser());
 app.use(session(sess));
 app.use(
   cors({
