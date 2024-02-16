@@ -47,30 +47,15 @@ var sess = {
     maxAge: 7200000,
     secure: app.get("env") === "production",
     sameSite: "none",
-    // domain: "worklearnproject.com",
   },
 };
 
 app.set("trust proxy", 1);
-// app.use(
-//   cookieSession({
-//     name: "cookie-session",
-//     keys: ["secretkey", "key2"],
-//     secret: secret,
-//     cookie: {
-//       secure: true,
-//       httpOnly: false,
-//       sameSite: "none",
-//     },
-//     // Cookie Options
-//     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-//   })
-// );
 
 app.use(session(sess));
 app.use(
   cors({
-    origin: process.env.REACT_APP_DEV_URL,
+    origin: process.env.REACT_APP_URL,
     credentials: true,
   })
 );
@@ -78,13 +63,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use((req, res, next) => {
-//   if (req.session) {
-//     req.session.regenerate = (cb) => cb();
-//     req.session.save = (cb) => cb();
-//   }
-//   next();
-// });
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
