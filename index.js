@@ -34,56 +34,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Replace these with your Google OAuth credentials
-// const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-// const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-// const CALLBACK_URL =
-//   "https://aied-staging-backend.vercel.app/auth/google/callback";
-
-// passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: GOOGLE_CLIENT_ID,
-//       clientSecret: GOOGLE_CLIENT_SECRET,
-//       callbackURL: CALLBACK_URL,
-//     },
-//     async (accessToken, refreshToken, profile, done) => {
-//       // Here, you can save user data to your database or perform other actions
-//       // In this example, we return the user profile as is
-
-//       try {
-//         // Check if the user already exists in the database
-//         const existingUser = await User.findOne({ googleId: profile.id });
-
-//         if (existingUser) {
-//           // User already exists, update their profile
-//           existingUser.displayName = profile.displayName;
-//           existingUser.email = profile.emails[0].value;
-//           await existingUser.save();
-//           return done(null, existingUser);
-//         } else {
-//           // Create a new user in the database
-//           const newUser = new User({
-//             googleId: profile.id,
-//             displayName: profile.displayName,
-//             email: profile.emails[0].value,
-//             decompositionScore: -1,
-//             patternScore: -1,
-//             abstractionScore: -1,
-//             algorithmScore: -1,
-//             introScore: -1,
-//             role: "",
-//           });
-//           await newUser.save();
-//           return done(null, newUser);
-//         }
-//       } catch (err) {
-//         return done(err, null);
-//       }
-//     }
-//   )
-// );
-
 const secret = process.env.NODE_JS_SECRET_KEY;
 
 // Initialize passport and session
@@ -97,34 +47,11 @@ var sess = {
     maxAge: 7200000,
     secure: app.get("env") === "production",
     sameSite: "none",
-    // domain: "worklearnproject.com",
   },
 };
 
-// if (app.get("env") === "production") {
-//   console.log(app.get("env"));
-//   app.set("trust proxy", 1); // trust first proxy
-//   sess.cookie.secure = true; // serve secure cookies
-// }
-
 app.set("trust proxy", 1);
-// app.use(
-//   cookieSession({
-//     name: "cookie-session",
-//     keys: ["secretkey", "key2"],
-//     secret: secret,
-//     cookie: {
-//       secure: true,
-//       httpOnly: false,
-//       sameSite: "none",
-//     },
-//     // Cookie Options
-//     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-//   })
-// );
 
-// app.use("/auth/google", cors());
-// app.use(cookieParser());
 app.use(session(sess));
 app.use(
   cors({
@@ -136,13 +63,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use((req, res, next) => {
-//   if (req.session) {
-//     req.session.regenerate = (cb) => cb();
-//     req.session.save = (cb) => cb();
-//   }
-//   next();
-// });
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {

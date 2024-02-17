@@ -88,6 +88,15 @@ router.put("/quiz", async (req, res) => {
           beyondScore: quizScore.beyondScore,
         });
       }
+    } else if (type === "python1") {
+      if (quizScore.pythonOneScore > 0) {
+        console.log("yes");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            pythonOneScore: quizScore.pythonOneScore,
+          },
+        });
+      }
     }
     console.log("-----user------");
     res.json(user);
