@@ -97,6 +97,15 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
+    } else if (type === "python2") {
+      if (quizScore.pythonTwoScore > 0) {
+        console.log("lesson 2");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            pythonTwoScore: quizScore.pythonTwoScore,
+          },
+        });
+      }
     }
     console.log("-----user------");
     res.json(user);
