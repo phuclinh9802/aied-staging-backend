@@ -242,6 +242,9 @@ app.post("/register", async (req, res) => {
       reviewScore: -1,
       emailScore: -1,
       beyondScore: -1,
+      pythonOneScore: -1,
+      pythonTwoScore: -1,
+      pythonThreeScore: -1,
     });
     await newUser.save();
 
