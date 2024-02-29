@@ -111,7 +111,7 @@ router.put("/quiz", async (req, res) => {
         console.log("lesson 3");
         user = await User.findByIdAndUpdate(userId, {
           $set: {
-            pythonTwoScore: quizScore.pythonThreeScore,
+            pythonThreeScore: quizScore.pythonThreeScore,
           },
         });
       }
