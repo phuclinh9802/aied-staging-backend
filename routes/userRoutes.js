@@ -3,6 +3,7 @@ const User = require("../database/User");
 const passport = require("passport");
 var parser = require("body-parser");
 const { now } = require("mongoose");
+var moment = require("moment-timezone");
 var urlencodedParser = parser.urlencoded({ extended: false });
 const router = express.Router();
 
@@ -34,6 +35,10 @@ router.get("/:userId", async (req, res) => {
 router.put("/quiz", async (req, res) => {
   const { quizScore, type } = req.body;
   let userId = "";
+  let dateNow = moment(Date.now())
+    .tz("America/Chicago")
+    .format("YYYY-MM-DD HH:mm:ss");
+  console.log(dateNow);
   console.log("Quiz for ", type, req.isAuthenticated());
   console.log();
   if (req.isAuthenticated()) {
@@ -46,7 +51,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             decompositionScore: quizScore.decompositionScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -55,7 +60,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             patternScore: quizScore.patternScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -64,7 +69,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             abstractionScore: quizScore.abstractionScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -73,7 +78,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             algorithmScore: quizScore.algorithmScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -82,7 +87,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             introScore: quizScore.introScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -91,7 +96,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             reviewScore: quizScore.reviewScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -113,7 +118,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             pythonOneScore: quizScore.pythonOneScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -123,7 +128,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             pythonTwoScore: quizScore.pythonTwoScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }
@@ -133,7 +138,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             pythonThreeScore: quizScore.pythonThreeScore,
-            lastActivity: Date.now(),
+            lastActivity: dateNow,
           },
         });
       }

@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   pythonTwoScore: { type: Number, default: -1 },
   pythonThreeScore: { type: Number, default: -1 },
   role: String,
-  lastActivity: Date,
+  lastActivity: String,
 });
 
 const workLearner = mongoose.model("users", userSchema);
