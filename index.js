@@ -6,6 +6,7 @@ var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
 const MongoStore = require("connect-mongo");
 const LocalStrategy = require("passport-local").Strategy;
+const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
@@ -41,16 +42,16 @@ var sess = {
   secret: secret, // Change this to a secure random string
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_DB_DATABASE_URL }),
-  proxy: app.get("env") === "production",
-  cookie: {
-    maxAge: 7200000,
-    secure: app.get("env") === "production",
-    sameSite: "none",
-  },
+  // store: MongoStore.create({ mongoUrl: process.env.MONGO_DB_DATABASE_URL }),
+  // proxy: app.get("env") === "production",
+  // cookie: {
+  //   maxAge: 7200000,
+  //   secure: app.get("env") === "production",
+  //   sameSite: "none",
+  // },
 };
 
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 
 app.use(session(sess));
 app.use(

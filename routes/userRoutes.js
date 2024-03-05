@@ -2,6 +2,8 @@ const express = require("express");
 const User = require("../database/User");
 const passport = require("passport");
 var parser = require("body-parser");
+const { now } = require("mongoose");
+var moment = require("moment-timezone");
 var urlencodedParser = parser.urlencoded({ extended: false });
 const router = express.Router();
 
@@ -33,6 +35,10 @@ router.get("/:userId", async (req, res) => {
 router.put("/quiz", async (req, res) => {
   const { quizScore, type } = req.body;
   let userId = "";
+  let dateNow = moment(Date.now())
+    .tz("America/Chicago")
+    .format("YYYY-MM-DD HH:mm:ss");
+  console.log(dateNow);
   console.log("Quiz for ", type, req.isAuthenticated());
   console.log();
   if (req.isAuthenticated()) {
@@ -43,37 +49,55 @@ router.put("/quiz", async (req, res) => {
     if (type == "decomposition") {
       if (quizScore.decompositionScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
-          decompositionScore: quizScore.decompositionScore,
+          $set: {
+            decompositionScore: quizScore.decompositionScore,
+            lastActivity: dateNow,
+          },
         });
       }
     } else if (type === "pattern-recognition") {
       if (quizScore.patternScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
-          patternScore: quizScore.patternScore,
+          $set: {
+            patternScore: quizScore.patternScore,
+            lastActivity: dateNow,
+          },
         });
       }
     } else if (type === "abstraction") {
       if (quizScore.abstractionScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
-          abstractionScore: quizScore.abstractionScore,
+          $set: {
+            abstractionScore: quizScore.abstractionScore,
+            lastActivity: dateNow,
+          },
         });
       }
     } else if (type === "algorithms") {
       if (quizScore.algorithmScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
-          algorithmScore: quizScore.algorithmScore,
+          $set: {
+            algorithmScore: quizScore.algorithmScore,
+            lastActivity: dateNow,
+          },
         });
       }
     } else if (type === "intro") {
       if (quizScore.introScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
-          introScore: quizScore.introScore,
+          $set: {
+            introScore: quizScore.introScore,
+            lastActivity: dateNow,
+          },
         });
       }
     } else if (type === "review") {
       if (quizScore.reviewScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
-          reviewScore: quizScore.reviewScore,
+          $set: {
+            reviewScore: quizScore.reviewScore,
+            lastActivity: dateNow,
+          },
         });
       }
     } else if (type === "email") {
@@ -94,6 +118,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             pythonOneScore: quizScore.pythonOneScore,
+            lastActivity: dateNow,
           },
         });
       }
@@ -103,6 +128,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             pythonTwoScore: quizScore.pythonTwoScore,
+            lastActivity: dateNow,
           },
         });
       }
@@ -112,6 +138,7 @@ router.put("/quiz", async (req, res) => {
         user = await User.findByIdAndUpdate(userId, {
           $set: {
             pythonThreeScore: quizScore.pythonThreeScore,
+            lastActivity: dateNow,
           },
         });
       }
