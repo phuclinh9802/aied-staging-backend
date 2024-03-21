@@ -12,14 +12,8 @@ const questionSchema = new mongoose.Schema({
     },
   ],
   correctAnswer: {
-    type: Number,
+    type: mongoose.Schema.Types.Mixed,
     required: true,
-    validate: {
-      validator: function (value) {
-        return value >= 0 && value < this.options.length;
-      },
-      message: "Invalid correct answer index",
-    },
   },
 });
 
@@ -29,6 +23,12 @@ const quizSchema = new mongoose.Schema({
     required: true,
   },
   questions: [questionSchema], // Array of question objects
+  correctAnswer: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+  },
+  rightAnswer: { type: Number, default: 0 },
+  wrongAnswer: { type: Number, default: 0 },
 });
 
 const Quiz = mongoose.model("Quiz", quizSchema);

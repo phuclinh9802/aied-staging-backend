@@ -260,7 +260,7 @@ app.use("/api/users", userRoutes);
 
 app.get("/dashboard", (req, res) => {
   // Check if the user is authenticated
-  console.log(req.user + " ----");
+  // console.log(req.user + " ----");
   if (req.isAuthenticated()) {
     res.json(req.user);
   } else {
@@ -277,6 +277,35 @@ app.get("/api/questions", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.put("/api/questions", async (req, res) => {
+  const { _id, rightOrWrong } = req.body;
+  const objectId = new mongoose.Types.ObjectId(_id);
+  let question = null;
+  try {
+    if (rightOrWrong) {
+      question = await Quiz.findByIdAndUpdate(
+        objectId,
+        {
+          $inc: { rightAnswer: 1 },
+        },
+        { new: true }
+      );
+    } else {
+      question = await Quiz.findByIdAndUpdate(
+        objectId,
+        {
+          $inc: { wrongAnswer: 1 },
+        },
+        { new: true }
+      );
+    }
+    res.json(question);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error", error });
   }
 });
 
