@@ -15,6 +15,8 @@ const questionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     required: true,
   },
+  rightAnswer: { type: Number, default: 0 },
+  wrongAnswer: { type: Number, default: 0 },
 });
 
 const quizSchema = new mongoose.Schema({

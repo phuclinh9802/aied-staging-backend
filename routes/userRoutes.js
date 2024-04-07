@@ -141,9 +141,19 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
+    } else if (type === "python5") {
+      if (quizScore.pythonFiveScore > 0) {
+        console.log("lesson 5");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            pythonFiveScore: quizScore.pythonFiveScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
     }
     console.log("-----user------");
-    res.json(user);
+    res.json("quizScore:", quizScore, "type: ", type);
   } catch (error) {
     console.error("Error updating user role:", error);
     res.status(500).json({ error: "Internal Server Error" });

@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
   pythonOneScore: { type: Number, default: -1 },
   pythonTwoScore: { type: Number, default: -1 },
   pythonThreeScore: { type: Number, default: -1 },
+  pythonFiveScore: { type: Number, default: -1 },
   role: String,
   lastActivity: String,
 });
