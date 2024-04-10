@@ -151,6 +151,16 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
+    } else if (type === "python6") {
+      if (quizScore.pythonFiveScore > 0) {
+        console.log("lesson 6");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            pythonSixScore: quizScore.pythonSixScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
     }
     console.log("-----user------");
     res.json("quizScore:", quizScore, "type: ", type);
