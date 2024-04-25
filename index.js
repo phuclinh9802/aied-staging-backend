@@ -53,7 +53,7 @@ var sess = {
 
 app.set("trust proxy", 1);
 
-// with cpanel
+// with cpanel.
 app.use(session(sess));
 app.use(
   cors({
