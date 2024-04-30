@@ -65,7 +65,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// local
+// local.
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     const user = await User.findOne({ username: username });
