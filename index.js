@@ -169,7 +169,7 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
     }
   );
   console.log("req:", req.isAuthenticated());
-  res.json({ token, user: { firstName, lastName, username, role } });
+  res.json({ token, user: { _id,firstName, lastName, username, role } });
 });
 
 app.post("/register", async (req, res) => {

@@ -32,17 +32,15 @@ router.get("/:userId", async (req, res) => {
 });
 
 router.put("/quiz", async (req, res) => {
+  console.log("req.body", req.body);
   const { quizScore, type } = req.body;
-  let userId = "";
+  let userId = req.body.user_id;
   let dateNow = moment(Date.now())
     .tz("America/Chicago")
     .format("YYYY-MM-DD HH:mm:ss");
   console.log(dateNow);
   console.log("Quiz for ", type, req.isAuthenticated());
   console.log();
-  if (req.isAuthenticated()) {
-    userId = req.user._conditions._id._id; // Assuming you have user authentication middleware setting req.user.id
-  }
   try {
     let user = "";
     if (type == "decomposition") {
