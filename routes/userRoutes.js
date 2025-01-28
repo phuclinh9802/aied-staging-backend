@@ -178,4 +178,63 @@ router.put("/quiz", async (req, res) => {
   }
 });
 
+// new api to hide the user by changing the user role from student to hidden
+
+
+// router.put("/:id/hide", async (req, res) => {
+//   console.log("userId to hide ", req.params.id);
+
+//   try {
+//     // Use findByIdAndUpdate to directly update the role
+//     const user = await User.findByIdAndUpdate(
+//       mongoose.Types.ObjectId(req.params.id), // Convert id to ObjectId
+//       { $set: { role: "Offline" } }, // Update the role
+//       { new: true } // Return the updated document
+//     );
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     res.status(200).json({ message: "User role updated to 'Offline'", user });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error updating user role", error });
+//   }
+// });
+
+
+router.put("/hide", async (req, res) => {
+  console.log("req.body", req.body);
+
+  const { user_id } = req.body; // Extract user ID from request body
+  console.log("Setting user to Offline");
+
+  try {
+    // Find user by ID and update their role to 'Offline'
+    const user = await User.findByIdAndUpdate(
+      //'65b02fb106981a9d9d9c6ea0', // User ID from request body
+      user_id,
+      {
+        $set: {
+          role: "Offline" // Set role to Offline
+          
+        },
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("User updated successfully", user);
+    res.status(200).json({
+      message: "User hidden successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 module.exports = router;
