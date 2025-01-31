@@ -1,7 +1,4 @@
-const express = require("express");
-const passport = require("passport");
-const session = require("express-session");
-const cookieSession = require("cookie-session");
+const session = require("express-session"); 
 var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
 const MongoStore = require("connect-mongo");
@@ -18,16 +15,22 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const userRoutes = require("./routes/userRoutes");
 const isStrongPassword = require("./middleware/middleware");
 const isValidEmail = require("./middleware/validEmail");
+const express = require("express");
+const watchQuizUpdates = require("./slackNotification"); // Import Slack notification watcher
+const passport = require("passport");
 require("dotenv").config();
+
 
 mongoose
   .connect(process.env.MONGO_DB_DATABASE_URL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
   })
-  .then(() => console.log("Connected Successfully"))
+  .then(() => {console.log("Connected Successfully");
+    watchQuizUpdates(); // Start watching quiz updates
+  })
   .catch((err) => {
-    console.error(err);
+    console.error("Error connecting to MongoDB:", err);
   });
 
 const GoogleStrategy = require("passport-google-oauth20").Strategy;

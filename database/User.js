@@ -7,6 +7,12 @@ const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   password: String,
+  quizAttempts: { type: Number, default: 0 },
+  quizHistory: {  // Store attempts per quiz type
+    type: Map,
+    of: Number,
+    default: {}
+},
   decompositionScore: { type: Number, default: -1 },
   patternScore: { type: Number, default: -1 },
   abstractionScore: { type: Number, default: -1 },

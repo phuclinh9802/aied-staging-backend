@@ -34,7 +34,7 @@ router.get("/:userId", async (req, res) => {
 router.put("/quiz", async (req, res) => {
   console.log("req.body", req.body);
   const { quizScore, type } = req.body;
-  let userId = req.body.user_id;
+  let userId = req.body.user_id.trim();
   let dateNow = moment(Date.now())
     .tz("America/Chicago")
     .format("YYYY-MM-DD HH:mm:ss");
@@ -42,7 +42,10 @@ router.put("/quiz", async (req, res) => {
   console.log("Quiz for ", type, req.isAuthenticated());
   console.log();
   try {
-    let user = "";
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+  }
     if (type == "decomposition") {
       if (quizScore.decompositionScore > 0) {
         user = await User.findByIdAndUpdate(userId, {
@@ -169,6 +172,49 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
+    }
+    let updateField = {};
+
+    if (type === "decomposition" && quizScore.decompositionScore > 0) {
+      updateField.decompositionScore = quizScore.decompositionScore;
+    } else if (type === "pattern-recognition" && quizScore.patternScore > 0) {
+      updateField.patternScore = quizScore.patternScore;
+    } else if (type === "abstraction" && quizScore.abstractionScore > 0) {
+      updateField.abstractionScore = quizScore.abstractionScore;
+    } else if (type === "algorithms" && quizScore.algorithmScore > 0) {
+      updateField.algorithmScore = quizScore.algorithmScore;
+    } else if (type === "intro" && quizScore.introScore > 0) {
+      updateField.introScore = quizScore.introScore;
+    } else if (type === "review" && quizScore.reviewScore > 0) {
+      updateField.reviewScore = quizScore.reviewScore;
+    } else if (type === "email" && quizScore.emailScore > 0) {
+      updateField.emailScore = quizScore.emailScore;
+    } else if (type === "beyond" && quizScore.beyondScore > 0) {
+      updateField.beyondScore = quizScore.beyondScore;
+    } else if (type === "python1" && quizScore.pythonOneScore > 0) {
+      updateField.pythonOneScore = quizScore.pythonOneScore;
+    } else if (type === "python2" && quizScore.pythonTwoScore > 0) {
+      updateField.pythonTwoScore = quizScore.pythonTwoScore;
+    } else if (type === "python3" && quizScore.pythonThreeScore > 0) {
+      updateField.pythonThreeScore = quizScore.pythonThreeScore;
+    } else if (type === "python5" && quizScore.pythonFiveScore > 0) {
+      updateField.pythonFiveScore = quizScore.pythonFiveScore;
+    } else if (type === "python6" && quizScore.pythonSixScore > 0) {
+      updateField.pythonSixScore = quizScore.pythonSixScore;
+    } else if (type === "python7" && quizScore.pythonSevenScore > 0) {
+      updateField.pythonSevenScore = quizScore.pythonSevenScore;
+    }
+
+    if (Object.keys(updateField).length > 0) {
+      //  Increment quizAttempts count
+      await User.findByIdAndUpdate(userId, {
+        $set: updateField,
+        $inc: { 
+            quizAttempts: 1, //  Total quiz attempts
+            [`quizHistory.${type}`]: 1 //  Individual quiz attempts
+        },
+        lastActivity: dateNow
+    });
     }
     console.log("-----user------");
     res.json("quizScore:", quizScore, "type: ", type);
