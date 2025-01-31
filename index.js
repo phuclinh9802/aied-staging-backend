@@ -30,7 +30,7 @@ mongoose
     watchQuizUpdates(); // Start watching quiz updates
   })
   .catch((err) => {
-    console.error(err);
+    console.error("Error connecting to MongoDB:", err);
   });
 
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
