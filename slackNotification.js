@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const axios = require("axios");
 require("dotenv").config();
+const cors = require("cors");
 
 // Slack Webhook URL (Replace with your actual webhook URL)
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
@@ -45,36 +46,38 @@ async function sendToSlack(user, type, score) {
 
 // Watch MongoDB for quiz updates
 const processedUpdates = new Set(); //  Prevents duplicate messages for the same quiz update
-
+let changeStreamRunning = false;
 async function watchQuizUpdates() {
+    if (changeStreamRunning) {
+        console.log("Change stream already running. Skipping duplicate setup.");
+        return;
+    }
+    changeStreamRunning = true;
+
     try {
         const db = mongoose.connection;
         const userCollection = db.collection("users");
 
-        const changeStream = userCollection.watch([
-            { $match: { operationType: "update" } }
-        ]);
-
-        console.log(" Watching for quiz updates...");
+        const changeStream = userCollection.watch([{ $match: { operationType: "update" } }]);
+        console.log("Watching for quiz updates...");
 
         changeStream.on("change", async (change) => {
             if (!change.documentKey || !change.documentKey._id) {
-                console.error(" Missing userId in change event.");
+                console.error("Missing userId in change event.");
                 return;
             }
 
             const userId = change.documentKey._id.toString();
             const updatedFields = change.updateDescription.updatedFields;
-            console.log("🔄 Change detected:", updatedFields);
+            console.log("Change detected:", updatedFields);
 
-            //  Ignore duplicate updates
             if (processedUpdates.has(userId)) {
-                console.log(" Skipping duplicate update for user:", userId);
+                console.log("Skipping duplicate update for user:", userId);
                 return;
             }
             processedUpdates.add(userId);
 
-            //  Fetch user details
+            // Fetch user details
             const user = await userCollection.findOne({ _id: new mongoose.Types.ObjectId(userId) });
 
             if (!user) {
@@ -83,55 +86,67 @@ async function watchQuizUpdates() {
             }
 
             const lastActivity = new Date(user.lastActivity).getTime() || Date.now();
-
-            //  Add the quiz update to pending queue
             pendingUpdates.push({ user, updatedFields, lastActivity });
 
             if (!isProcessing) {
                 processUpdates();
             }
 
-            //  Remove processed entry after 5 seconds (prevents unnecessary blocking)
+            // Remove processed entry after 5 seconds to allow new updates
             setTimeout(() => processedUpdates.delete(userId), 5000);
         });
+
+        changeStream.on("error", (err) => {
+            console.error("Change Stream Error:", err);
+            changeStreamRunning = false; // Reset flag in case of failure
+        });
+
     } catch (error) {
         console.error("Error watching MongoDB changes:", error);
+        changeStreamRunning = false; // Ensure flag resets in case of error
     }
 }
 
 
 //  Process pending quiz updates one by one in order of `lastActivity`
 async function processUpdates() {
-    if (isProcessing) return; //  Prevent parallel execution
+    if (isProcessing) return; // Prevent parallel execution
     isProcessing = true;
 
-    console.log(`🔄 Processing ${pendingUpdates.length} pending updates...`);
+    console.log(`Processing ${pendingUpdates.length} pending updates...`);
 
     while (pendingUpdates.length > 0) {
-        //  Sort updates by `lastActivity` (oldest first)
+        // Sort updates by `lastActivity` (oldest first)
         pendingUpdates.sort((a, b) => a.lastActivity - b.lastActivity);
-
-        const { user, updatedFields } = pendingUpdates.shift(); //  Get the first item
+        const { user, updatedFields } = pendingUpdates.shift(); // Get first item
 
         const quizTypes = [
             "decompositionScore", "patternScore", "abstractionScore", "algorithmScore",
             "introScore", "pythonOneScore", "pythonTwoScore", "pythonThreeScore",
             "pythonFiveScore", "pythonSixScore", "pythonSevenScore",
-            "reviewScore", "emailScore", "beyondScore"
+            "reviewScore", "emailScore", "beyondScore","mainframeOneScore"
         ];
+
+        let quizResults = []; // Array to collect updated quizzes
 
         for (const field in updatedFields) {
             if (quizTypes.includes(field) && updatedFields[field] > 0) {
                 const quizType = field.replace("Score", ""); // Extract quiz type
                 const score = updatedFields[field];
-
-                await sendToSlack(user, quizType, score);
+                quizResults.push(`*${quizType}*: *${score}*`);
             }
         }
-        await new Promise(resolve => setTimeout(resolve, 1000)); //  1s delay to prevent Slack rate limits
+
+        if (quizResults.length > 0) {
+            const quizSummary = quizResults.join("\n"); // Merge into one message
+            await sendToSlack(user, quizSummary);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1s delay to prevent Slack rate limits
     }
 
     isProcessing = false;
 }
+
 
 module.exports = watchQuizUpdates;
