@@ -6,6 +6,7 @@ const { now } = require("mongoose");
 var moment = require("moment-timezone");
 var urlencodedParser = parser.urlencoded({ extended: false });
 const router = express.Router();
+const cors = require("cors");
 
 router.get("/", async (req, res) => {
   try {
@@ -172,6 +173,16 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
+    } else if (type === "mainframe1") {
+      if (quizScore.mainframeOneScore > 0) {
+        console.log("lesson 8");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            mainframeOneScore: quizScore.mainframeOneScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
     }
     let updateField = {};
 
@@ -203,6 +214,8 @@ router.put("/quiz", async (req, res) => {
       updateField.pythonSixScore = quizScore.pythonSixScore;
     } else if (type === "python7" && quizScore.pythonSevenScore > 0) {
       updateField.pythonSevenScore = quizScore.pythonSevenScore;
+    } else if (type === "mainframe1" && quizScore.mainframeOneScore > 0) {
+      updateField.mainframeOneScore = quizScore.mainframeOneScore;
     }
 
     if (Object.keys(updateField).length > 0) {

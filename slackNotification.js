@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const axios = require("axios");
 require("dotenv").config();
+const cors = require("cors");
 
 // Slack Webhook URL (Replace with your actual webhook URL)
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
@@ -123,7 +124,7 @@ async function processUpdates() {
             "decompositionScore", "patternScore", "abstractionScore", "algorithmScore",
             "introScore", "pythonOneScore", "pythonTwoScore", "pythonThreeScore",
             "pythonFiveScore", "pythonSixScore", "pythonSevenScore",
-            "reviewScore", "emailScore", "beyondScore"
+            "reviewScore", "emailScore", "beyondScore","mainframeOneScore"
         ];
 
         let quizResults = []; // Array to collect updated quizzes

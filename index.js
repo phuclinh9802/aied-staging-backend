@@ -16,7 +16,7 @@ const userRoutes = require("./routes/userRoutes");
 const isStrongPassword = require("./middleware/middleware");
 const isValidEmail = require("./middleware/validEmail");
 const express = require("express");
-const watchQuizUpdates = require("./slackNotification"); // Import Slack notification watcher
+const watchQuizUpdates = require("./slackNotification"); 
 const passport = require("passport");
 require("dotenv").config();
 
@@ -27,7 +27,7 @@ mongoose
     useNewUrlParser: true,
   })
   .then(() => {console.log("Connected Successfully");
-    watchQuizUpdates(); // Start watching quiz updates
+    watchQuizUpdates(); 
   })
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err);
@@ -250,6 +250,7 @@ app.post("/register", async (req, res) => {
       pythonOneScore: -1,
       pythonTwoScore: -1,
       pythonThreeScore: -1,
+      mainframeOneScore: -1,
     });
     await newUser.save();
 
