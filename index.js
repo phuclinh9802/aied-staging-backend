@@ -251,6 +251,9 @@ app.post("/register", async (req, res) => {
       pythonTwoScore: -1,
       pythonThreeScore: -1,
       mainframeOneScore: -1,
+      lastActivity: null,
+      inactiveDays: 0,
+      activityLogs: [],
     });
     await newUser.save();
 

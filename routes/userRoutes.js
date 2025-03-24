@@ -17,6 +17,26 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+router.get("/activity/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId || userId === "undefined") {
+    console.error("Invalid or missing userId:", userId);
+    return res.status(400).json({ message: "Invalid or missing user ID" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user.activityLogs || []);
+  } catch (err) {
+    console.error("Error fetching user activity:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 router.get("/:userId", async (req, res) => {
   console.log("userId: ", req.params.userId);
@@ -31,6 +51,104 @@ router.get("/:userId", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+router.post("/activity/login", async (req, res) => {
+  const { user_id } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+  const currentTime = moment().tz("America/Chicago").format("HH:mm:ss");
+
+  try {
+    const user = await User.findById(user_id);
+
+    let activityLog = user.activityLogs.find(log => log.date === currentDate);
+    if (!activityLog) {
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], pagesVisited: [], quizzes: [] };
+      user.activityLogs.push(activityLog);
+    }
+
+    activityLog.loginTimes.push(currentTime);
+    await user.save();
+
+    res.json({ message: "Login time recorded" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/activity/logout", async (req, res) => {
+  const { user_id } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+  const currentTime = moment().tz("America/Chicago").format("HH:mm:ss");
+
+  try {
+    const user = await User.findById(user_id);
+
+    let activityLog = user.activityLogs.find(log => log.date === currentDate);
+    if (!activityLog) {
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], pagesVisited: [], quizzes: [] };
+      user.activityLogs.push(activityLog);
+    }
+
+    activityLog.logoutTimes.push(currentTime);
+    await user.save();
+
+    res.json({ message: "Logout time recorded" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/activity/page", async (req, res) => {
+  const { user_id, pageName, timeSpent } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+
+  try {
+    const user = await User.findById(user_id);
+    let activityLog = user.activityLogs.find(log => log.date === currentDate);
+    if (!activityLog) {
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], pagesVisited: [], quizzes: [] };
+      user.activityLogs.push(activityLog);
+    }
+
+    activityLog.pagesVisited.push({ pageName, timeSpent });
+    await user.save();
+
+    res.json({ message: "Page visit recorded" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/activity/quiz", async (req, res) => {
+  const { user_id, type, score, timeSpent } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+
+  try {
+    const user = await User.findById(user_id);
+    let activityLog = user.activityLogs.find(log => log.date === currentDate);
+    if (!activityLog) {
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], pagesVisited: [], quizzes: [] };
+      user.activityLogs.push(activityLog);
+    }
+
+    let quiz = activityLog.quizzes.find(q => q.type === type);
+    if (!quiz) {
+      quiz = { type, attempts: 0, timeSpent: 0, reached80Percent: false };
+      activityLog.quizzes.push(quiz);
+    }
+
+    quiz.attempts += 1;
+    quiz.timeSpent += timeSpent;
+    if (score >= 80) quiz.reached80Percent = true;
+
+    await user.save();
+    res.json({ message: "Quiz attempt recorded" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 router.put("/quiz", async (req, res) => {
   console.log("req.body", req.body);

@@ -1,6 +1,25 @@
 const { UUID } = require("mongodb");
 const mongoose = require("mongoose");
 
+const ActivityLogSchema = new mongoose.Schema({
+  date: { type: String }, // e.g., "2025-03-23"
+  loginTimes: [String], // all login timestamps
+  logoutTimes: [String], // all logout timestamps
+  pagesVisited: [
+    {
+      pageName: String,
+      timeSpent: Number, 
+    },
+  ],
+  quizzes: [
+    {
+      type: String, 
+      attempts: Number,
+      timeSpent: Number, 
+      reached80Percent: Boolean,
+    },
+  ],
+});
 const userSchema = new mongoose.Schema({
   username: String,
   email: String,
@@ -8,11 +27,7 @@ const userSchema = new mongoose.Schema({
   lastName: String,
   password: String,
   quizAttempts: { type: Number, default: 0 },
-  quizHistory: {  // Store attempts per quiz type
-    type: Map,
-    of: Number,
-    default: {}
-},
+  quizHistory: { type: Map, of: Number, default: {}},
   decompositionScore: { type: Number, default: -1 },
   patternScore: { type: Number, default: -1 },
   abstractionScore: { type: Number, default: -1 },
@@ -30,8 +45,10 @@ const userSchema = new mongoose.Schema({
   mainframeOneScore: { type: Number, default: -1 },
   role: String,
   lastActivity: String,
+  inactiveDays: Number,
+  activityLogs: [ActivityLogSchema],
+
 });
 
 const workLearner = mongoose.model("users", userSchema);
-
 module.exports = workLearner;
