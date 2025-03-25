@@ -17,18 +17,168 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+router.get("/activity/:userId", async (req, res) => {
+  const { userId } = req.params;
 
-router.get("/:userId", async (req, res) => {
-  console.log("userId: ", req.params.userId);
+  if (!userId || userId === "undefined") {
+    console.error("Invalid or missing userId:", userId);
+    return res.status(400).json({ message: "Invalid or missing user ID" });
+  }
+
   try {
-    const user = await User.findById(req.params.userId);
-    console.log(user);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json(user.activityLogs || []);
+  } catch (err) {
+    console.error("Error fetching user activity:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+router.get("/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId || userId === "undefined") {
+    console.error("Invalid or missing userId:", userId);
+    return res.status(400).json({ message: "Invalid or missing user ID" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("Fetched user data:", user); // Debugging log
+    res.json({
+      ...user.toObject(),
+      quizHistory: user.quizHistory || [], // Ensure quizHistory is included
+    });
+  } catch (err) {
+    console.error("Error fetching user details:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/activity/login", async (req, res) => {
+  const { user_id } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+  const currentTime = moment().tz("America/Chicago").format("HH:mm:ss");
+
+  try {
+    const user = await User.findById(user_id);
+
+    let activityLog = user.activityLogs.find(log => log.date === currentDate);
+    if (!activityLog) {
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], pagesVisited: [], quizHistory: [] };
+      user.activityLogs.push(activityLog);
+    }
+
+    activityLog.loginTimes.push(currentTime);
+    await user.save();
+
+    res.json({ message: "Login time recorded" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.post("/activity/logout", async (req, res) => {
+  const { user_id } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+  const currentTime = moment().tz("America/Chicago").format("HH:mm:ss");
+
+  console.log("Logout data received:", { user_id, currentDate, currentTime }); // Debugging log
+
+  try {
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find or create today's activity log
+    let activityLog = user.activityLogs.find(log => log.date === currentDate);
+    if (!activityLog) {
+      console.log("Creating new activity log for date:", currentDate); // Debugging log
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], quizHistory: [] };
+      user.activityLogs.push(activityLog);
+    }
+    // Add the logout time
+    activityLog.logoutTimes.push(currentTime);
+    console.log("Updated logoutTimes:", activityLog.logoutTimes); // Debugging log
+
+    // Save the user document
+    await user.save();
+    console.log("Logout time saved successfully for user_id:", user_id); // Debugging log
+
+    res.json({ message: "Logout time recorded", logoutTimes: activityLog.logoutTimes });
+  } catch (err) {
+    console.error("Error recording logout time:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/activity/quiz", async (req, res) => {
+  const { user_id, type, score, timeSpent } = req.body;
+  const currentDate = moment().tz("America/Chicago").format("YYYY-MM-DD");
+
+  console.log("Quiz data received:", { user_id, type, score, timeSpent }); // Debugging log
+
+  try {
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update overall quizHistory
+    let quiz = user.quizHistory.find((q) => q.type === type);
+    if (!quiz) {
+      quiz = { type, attempts: 0, scores: [], timeSpent: [], reached80Percent: false, attemptsToReach80: 0 };
+      user.quizHistory.push(quiz);
+    }
+
+    quiz.attempts += 1;
+    quiz.scores.push(score);
+    quiz.timeSpent.push(timeSpent);
+
+    if (score >= 80 && !quiz.reached80Percent) {
+      quiz.reached80Percent = true;
+      quiz.attemptsToReach80 = quiz.attempts;
+    }
+
+    console.log("Updated quizHistory:", user.quizHistory); // Debugging log
+
+    // Update daily activityLogs
+    let activityLog = user.activityLogs.find((log) => log.date === currentDate);
+    if (!activityLog) {
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], pagesVisited: [], quizzes: [] };
+      user.activityLogs.push(activityLog);
+    }
+
+    let dailyQuiz = activityLog.quizzes.find((q) => q.type === type);
+    if (!dailyQuiz) {
+      dailyQuiz = { type, attempts: 0, scores: [], timeSpent: [], reached80Percent: false, attemptsToReach80: 0 };
+      activityLog.quizzes.push(dailyQuiz);
+    }
+
+    dailyQuiz.attempts += 1;
+    dailyQuiz.scores.push(score);
+    dailyQuiz.timeSpent.push(timeSpent);
+
+    if (score >= 80 && !dailyQuiz.reached80Percent) {
+      dailyQuiz.reached80Percent = true;
+      dailyQuiz.attemptsToReach80 = dailyQuiz.attempts;
+    }
+
+    await user.save();
+    console.log("Quiz data saved successfully for user_id:", user_id); // Debugging log
+
+    res.json({ message: "Quiz data recorded", quizHistory: user.quizHistory });
+  } catch (err) {
+    console.error("Error recording quiz data:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

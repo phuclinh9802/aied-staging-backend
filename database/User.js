@@ -1,6 +1,20 @@
 const { UUID } = require("mongodb");
 const mongoose = require("mongoose");
 
+const ActivityLogSchema = new mongoose.Schema({
+  date: { type: String }, // e.g., "2025-03-23"
+  loginTimes: [String], // all login timestamps
+  logoutTimes: [String], // all logout timestamps
+  quizHistory: [
+    {
+      type: { type: String, required: true }, // Quiz type
+      attempts: { type: Number, default: 0 }, // Total attempts
+      scores: { type: [Number], default: [] }, // List of scores
+      timeSpent: { type: [Number], default: [] }, // Time spent on each attempt
+      attemptsToReach80: { type: Number, default: 0 }, // Attempts to reach 80%
+    },
+  ],
+});
 const userSchema = new mongoose.Schema({
   username: String,
   email: String,
@@ -8,11 +22,15 @@ const userSchema = new mongoose.Schema({
   lastName: String,
   password: String,
   quizAttempts: { type: Number, default: 0 },
-  quizHistory: {  // Store attempts per quiz type
-    type: Map,
-    of: Number,
-    default: {}
-},
+  quizHistory: [
+    {
+      type: { type: String, required: true }, 
+      attempts: { type: Number, default: 0 }, 
+      scores: { type: [Number], default: [] }, 
+      timeSpent: { type: [Number], default: [] },
+      attemptsToReach80: { type: Number, default: 0 }, 
+    },
+  ],
   decompositionScore: { type: Number, default: -1 },
   patternScore: { type: Number, default: -1 },
   abstractionScore: { type: Number, default: -1 },
@@ -30,8 +48,9 @@ const userSchema = new mongoose.Schema({
   mainframeOneScore: { type: Number, default: -1 },
   role: String,
   lastActivity: String,
+  inactiveDays: Number,
+  activityLogs: [ActivityLogSchema],
+
 });
-
 const workLearner = mongoose.model("users", userSchema);
-
 module.exports = workLearner;
