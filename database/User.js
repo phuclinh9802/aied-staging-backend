@@ -5,18 +5,13 @@ const ActivityLogSchema = new mongoose.Schema({
   date: { type: String }, // e.g., "2025-03-23"
   loginTimes: [String], // all login timestamps
   logoutTimes: [String], // all logout timestamps
-  pagesVisited: [
+  quizHistory: [
     {
-      pageName: String,
-      timeSpent: Number, 
-    },
-  ],
-  quizzes: [
-    {
-      type: String, 
-      attempts: Number,
-      timeSpent: Number, 
-      reached80Percent: Boolean,
+      type: { type: String, required: true }, // Quiz type
+      attempts: { type: Number, default: 0 }, // Total attempts
+      scores: { type: [Number], default: [] }, // List of scores
+      timeSpent: { type: [Number], default: [] }, // Time spent on each attempt
+      attemptsToReach80: { type: Number, default: 0 }, // Attempts to reach 80%
     },
   ],
 });
@@ -27,7 +22,15 @@ const userSchema = new mongoose.Schema({
   lastName: String,
   password: String,
   quizAttempts: { type: Number, default: 0 },
-  quizHistory: { type: Map, of: Number, default: {}},
+  quizHistory: [
+    {
+      type: { type: String, required: true }, 
+      attempts: { type: Number, default: 0 }, 
+      scores: { type: [Number], default: [] }, 
+      timeSpent: { type: [Number], default: [] },
+      attemptsToReach80: { type: Number, default: 0 }, 
+    },
+  ],
   decompositionScore: { type: Number, default: -1 },
   patternScore: { type: Number, default: -1 },
   abstractionScore: { type: Number, default: -1 },
@@ -49,6 +52,5 @@ const userSchema = new mongoose.Schema({
   activityLogs: [ActivityLogSchema],
 
 });
-
 const workLearner = mongoose.model("users", userSchema);
 module.exports = workLearner;
