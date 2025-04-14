@@ -333,7 +333,57 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
-    }
+    }  else if (type === "mainframe2") {
+      if (quizScore.mainframeTwoScore > 0) {
+        console.log("lesson 9");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            mainframeTwoScore: quizScore.mainframeTwoScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "mainframe3") {
+      if (quizScore.mainframeThreeScore > 0) {
+        console.log("lesson 10");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            mainframeThreeScore: quizScore.mainframeThreeScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "mainframe4") { 
+      if (quizScore.mainframeFourScore > 0) {
+        console.log("lesson 11");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            mainframeFourScore: quizScore.mainframeFourScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "mainframe5") {
+      if (quizScore.mainframeFiveScore > 0) {
+        console.log("lesson 12");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            mainframeFiveScore: quizScore.mainframeFiveScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "mainframe6") {
+      if (quizScore.mainframeSixScore > 0) {
+        console.log("lesson 13");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            mainframeSixScore: quizScore.mainframeSixScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } 
     let updateField = {};
 
     if (type === "decomposition" && quizScore.decompositionScore > 0) {
@@ -366,6 +416,16 @@ router.put("/quiz", async (req, res) => {
       updateField.pythonSevenScore = quizScore.pythonSevenScore;
     } else if (type === "mainframe1" && quizScore.mainframeOneScore > 0) {
       updateField.mainframeOneScore = quizScore.mainframeOneScore;
+    } else if (type === "mainframe2" && quizScore.mainframeTwoScore > 0) {
+      updateField.mainframeTwoScore = quizScore.mainframeTwoScore;
+    } else if (type === "mainframe3" && quizScore.mainframeThreeScore > 0) {
+      updateField.mainframeThreeScore = quizScore.mainframeThreeScore;
+    } else if (type === "mainframe4" && quizScore.mainframeFourScore > 0) {
+      updateField.mainframeFourScore = quizScore.mainframeFourScore;
+    } else if (type === "mainframe5" && quizScore.mainframeFiveScore > 0) {
+      updateField.mainframeFiveScore = quizScore.mainframeFiveScore;
+    } else if (type === "mainframe6" && quizScore.mainframeSixScore > 0) {
+      updateField.mainframeSixScore = quizScore.mainframeSixScore;
     }
 
     if (Object.keys(updateField).length > 0) {

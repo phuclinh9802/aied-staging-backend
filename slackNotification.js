@@ -124,7 +124,8 @@ async function processUpdates() {
             "decompositionScore", "patternScore", "abstractionScore", "algorithmScore",
             "introScore", "pythonOneScore", "pythonTwoScore", "pythonThreeScore",
             "pythonFiveScore", "pythonSixScore", "pythonSevenScore",
-            "reviewScore", "emailScore", "beyondScore","mainframeOneScore"
+            "reviewScore", "emailScore", "beyondScore","mainframeOneScore","mainframeTwoScore",
+            "mainframeThreeScore","mainframeFourScore","mainframeFiveScore","mainframeSixScore",
         ];
 
         let quizResults = []; // Array to collect updated quizzes
