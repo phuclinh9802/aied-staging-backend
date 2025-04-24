@@ -239,6 +239,7 @@ app.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      registeredAt: new Date(),
       decompositionScore: -1,
       patternScore: -1,
       abstractionScore: -1,

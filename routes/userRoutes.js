@@ -471,6 +471,55 @@ router.put("/quiz", async (req, res) => {
 //   }
 // });
 
+router.put("/unhide", async (req, res) => {
+  console.log("req.body", req.body);
+  const { user_id } = req.body; 
+  console.log("Setting user to Student");
+  try {
+    // Find user by ID and update their role to 'Offline'
+    const user = await User.findByIdAndUpdate(
+      user_id,
+      {
+        $set: {
+          role: "student" 
+        },
+      },
+      { new: true } 
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log("User updated successfully", user);
+    res.status(200).json({
+      message: "User hidden successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.delete("/delete", async (req, res) => {
+  const { user_id } = req.body;
+  if (!user_id) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+  try {
+    const user = await User.findByIdAndDelete(user_id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log("User deleted successfully", user);
+    res.status(200).json({
+      message: "User deleted successfully",
+      deletedUserId: user._id,
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 router.put("/hide", async (req, res) => {
   console.log("req.body", req.body);

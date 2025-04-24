@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   password: String,
+  registeredAt: { type: Date, default: Date.now, immutable: true  },
   quizAttempts: { type: Number, default: 0 },
   quizHistory: [
     {
