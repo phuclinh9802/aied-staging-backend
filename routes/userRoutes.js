@@ -7,6 +7,10 @@ var moment = require("moment-timezone");
 var urlencodedParser = parser.urlencoded({ extended: false });
 const router = express.Router();
 const cors = require("cors");
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const bcrypt = require('bcryptjs');
+
 
 router.get("/", async (req, res) => {
   try {
@@ -553,6 +557,78 @@ router.put("/hide", async (req, res) => {
   } catch (error) {
     console.error("Error updating user role:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+const passwordResetTokens = new Map();
+
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'No user with that email.' });
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        passwordResetTokens.set(token, { email, expires: Date.now() + 3600000 }); // 1 hr expiry
+  
+        // Configure Nodemailer (you need SMTP or Mailtrap or Gmail)
+        const transporter = nodemailer.createTransport({
+          service: 'Gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+          },
+        });
+        
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
+        await transporter.sendMail({
+          from: process.env.EMAIL_FROM,  
+          to: user.email,
+          subject: 'Password Reset Request',
+          html: `<p>You requested a password reset</p><p>Click <a href="${resetLink}">here</a> to reset your password</p>`,
+        });
+        
+
+        res.json({ message: 'Reset link sent to your email.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+
+  const data = passwordResetTokens.get(token);
+
+  if (!data) {
+    return res.status(400).json({ message: 'Invalid or expired token.' });
+  }
+
+  if (data.expires < Date.now()) {
+    passwordResetTokens.delete(token);
+    return res.status(400).json({ message: 'Token expired.' });
+  }
+
+  try {
+    const user = await User.findOne({ email: data.email }); // ✅ FIND THE USER FIRST
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10); // ✅ Hash the new password
+    user.password = hashedPassword;
+    await user.save(); // ✅ Save user with new password
+
+    passwordResetTokens.delete(token);
+
+    res.json({ message: 'Password reset successful.' });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 module.exports = router;
