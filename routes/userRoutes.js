@@ -574,21 +574,17 @@ router.post('/forgot-password', async (req, res) => {
   
         // Configure Nodemailer (you need SMTP or Mailtrap or Gmail)
         const transporter = nodemailer.createTransport({
-          host: process.env.EMAIL_HOST,
-          port: process.env.EMAIL_PORT,
-          secure: false, // STARTTLS
+          service: 'Gmail',
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
           },
         });
-        console.log("EMAIL_USER", process.env.EMAIL_USER);
-        console.log("EMAIL_PASS", process.env.EMAIL_PASS);
         
-        const resetLink = `http://localhost:3000/reset-password/${token}`;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
         await transporter.sendMail({
-          from: process.env.EMAIL_FROM,  // ✅ Add this line
+          from: process.env.EMAIL_FROM,  
           to: user.email,
           subject: 'Password Reset Request',
           html: `<p>You requested a password reset</p><p>Click <a href="${resetLink}">here</a> to reset your password</p>`,
