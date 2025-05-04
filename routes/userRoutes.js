@@ -10,6 +10,7 @@ const cors = require("cors");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
+const e = require("express");
 
 
 router.get("/", async (req, res) => {
@@ -387,7 +388,47 @@ router.put("/quiz", async (req, res) => {
           },
         });
       }
-    } 
+    } else if (type === "cobol2") {
+      if (quizScore.cobolTwoScore > 0) {
+        console.log("lesson 14");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            cobolTwoScore: quizScore.cobolTwoScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "cobol3") {
+      if (quizScore.cobolThreeScore > 0) {
+        console.log("lesson 15");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            cobolThreeScore: quizScore.cobolThreeScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "cobol4") {
+      if (quizScore.cobolFourScore > 0) {
+        console.log("lesson 16");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            cobolFourScore: quizScore.cobolFourScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    } else if (type === "cobol6") {
+      if (quizScore.cobolSixScore > 0) {
+        console.log("lesson 17");
+        user = await User.findByIdAndUpdate(userId, {
+          $set: {
+            cobolSixScore: quizScore.cobolSixScore,
+            lastActivity: dateNow,
+          },
+        });
+      }
+    }
     let updateField = {};
 
     if (type === "decomposition" && quizScore.decompositionScore > 0) {
@@ -430,6 +471,15 @@ router.put("/quiz", async (req, res) => {
       updateField.mainframeFiveScore = quizScore.mainframeFiveScore;
     } else if (type === "mainframe6" && quizScore.mainframeSixScore > 0) {
       updateField.mainframeSixScore = quizScore.mainframeSixScore;
+    } else if (type === "cobol2" && quizScore.cobolTwoScore > 0) {
+      updateField.cobolTwoScore = quizScore.cobolTwoScore;
+    } else if (type === "cobol3" && quizScore.cobolThreeScore > 0) {
+      updateField.cobolThreeScore = quizScore.cobolThreeScore;
+    } else if (type === "cobol4" && quizScore.cobolFourScore > 0) {
+      updateField.cobolFourScore = quizScore.cobolFourScore;
+    }
+    else if (type === "cobol6" && quizScore.cobolSixScore > 0) {
+      updateField.cobolSixScore = quizScore.cobolSixScore;
     }
 
     if (Object.keys(updateField).length > 0) {
@@ -587,7 +637,7 @@ router.post('/forgot-password', async (req, res) => {
           from: process.env.EMAIL_FROM,  
           to: user.email,
           subject: 'Password Reset Request',
-          html: `<p>You requested a password reset</p><p>Click <a href="${resetLink}">here</a> to reset your password</p>`,
+          html: `<p>You requested a password reset</p><p>Click <a href="${resetLink}">here</a> to reset your password, This Link will expire in 10 mins</p>`,
         });
         
 
@@ -604,7 +654,7 @@ router.post('/reset-password', async (req, res) => {
   const data = passwordResetTokens.get(token);
 
   if (!data) {
-    return res.status(400).json({ message: 'Invalid or expired token.' });
+    return res.status(400).json({ message: 'Your password reset link has expired.' });
   }
 
   if (data.expires < Date.now()) {
