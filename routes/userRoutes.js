@@ -107,7 +107,7 @@ router.post("/activity/logout", async (req, res) => {
     let activityLog = user.activityLogs.find(log => log.date === currentDate);
     if (!activityLog) {
       console.log("Creating new activity log for date:", currentDate); // Debugging log
-      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [], quizHistory: [] };
+      activityLog = { date: currentDate, loginTimes: [], logoutTimes: [] };
       user.activityLogs.push(activityLog);
     }
     // Add the logout time
@@ -119,6 +119,7 @@ router.post("/activity/logout", async (req, res) => {
     console.log("Logout time saved successfully for user_id:", user_id); // Debugging log
 
     res.json({ message: "Logout time recorded", logoutTimes: activityLog.logoutTimes });
+   // Redirect to the home page after logout
   } catch (err) {
     console.error("Error recording logout time:", err);
     res.status(500).json({ error: err.message });
